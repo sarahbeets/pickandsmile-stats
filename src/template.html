@@ -255,6 +255,36 @@ details.data th,details.data td{padding:7px 10px}
 #tip .tk{width:12px;height:3px;border-radius:2px;display:inline-block}
 #tip .tl{opacity:.8}
 
+/* ----- Couleurs des réseaux ----- */
+.net-facebook{--net:#1877F2;--net-ink:#1468D8;--net-soft:#E8F1FE;--net-hl:#166FE5;--net-bg:#166FE5}
+.net-instagram{--net:#C13584;--net-ink:#B12A79;--net-soft:#FBEAF3;--net-hl:linear-gradient(135deg,#8134AF 0%,#C13584 58%,#DD2A7B 100%);--net-bg:linear-gradient(110deg,#8134AF 0%,#C13584 45%,#DD2A7B 72%,#F58529 100%)}
+.net-linkedin{--net:#0A66C2;--net-ink:#0A66C2;--net-soft:#E7F0F9;--net-hl:#0A66C2;--net-bg:#0A66C2}
+.net-meta{--net:#0064E0;--net-ink:#0057C2;--net-soft:#E6EFFC;--net-hl:linear-gradient(135deg,#0064E0 0%,#0082FB 100%);--net-bg:linear-gradient(110deg,#0064E0 0%,#0082FB 100%)}
+.net-tiktok{--net:#FE2C55;--net-ink:#D81A47;--net-soft:#FFE9EE;--net-hl:#161823;--net-bg:linear-gradient(110deg,#161823 0%,#161823 60%,#FE2C55 100%)}
+.net-pub{--net:#8C52FF;--net-ink:#6A32E6;--net-soft:#EFE7FF;--net-hl:linear-gradient(110deg,#0064E0 0%,#8C52FF 52%,#FE2C55 100%);--net-bg:linear-gradient(110deg,#0064E0 0%,#8C52FF 52%,#FE2C55 100%)}
+.rs .net-banner{background:var(--net-bg)}
+.rs .tag,.rs .kpi.hl{background:var(--net-hl)}
+.rs .kpi.hl{border-color:transparent}
+.rs .kpi.hl .pill{color:var(--net-ink)}
+.rs .kpi-value.accent,.rs .split .n,.rs .note-title,.rs .an h4,.rs .demo h4,.rs .demo li:first-child .dv,.rs th,.rs td.eng,.rs tr.self td.eng{color:var(--net-ink)}
+.rs .ast{color:var(--net)}
+.rs .kpi.hl .ast,.rs .net-banner .ast{color:rgba(255,255,255,.78)}
+.rs .demo .bar,.rs .pill.neutral,.rs .pill.accent,.rs .mk.r,.rs tr.self td{background:var(--net-soft)}
+.rs .pill.neutral,.rs .pill.accent,.rs .mk.r{color:var(--net-ink)}
+.rs .demo .bar i{background:var(--net)}
+.rs td.title a{background-image:linear-gradient(var(--net-soft),var(--net-soft))}
+.rs td.title a:hover{color:var(--net-ink);background-image:linear-gradient(var(--net),var(--net))}
+.ndot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--net-bg,var(--violet));flex:none}
+.ov{position:relative;overflow:hidden}
+.ov::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--net-bg)}
+.ov .kpi-label{display:flex;align-items:center;gap:8px;color:var(--net-ink);font-weight:600}
+.sm .net,.chart-head h4{display:flex;align-items:center;gap:8px}
+.nav a[data-sec="facebook"]::before,.nav a[data-sec="instagram"]::before,.nav a[data-sec="linkedin"]::before,.nav a[data-sec="publicite"]::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.nav a[data-sec="facebook"]::before{background:#1877F2}
+.nav a[data-sec="instagram"]::before{background:linear-gradient(135deg,#8134AF,#DD2A7B 60%,#F58529)}
+.nav a[data-sec="linkedin"]::before{background:#0A66C2}
+.nav a[data-sec="publicite"]::before{background:linear-gradient(135deg,#0064E0,#FE2C55)}
+
 /* ----- Pied de page ----- */
 footer{background:var(--violet);color:#fff;margin-top:40px;position:relative;overflow:hidden}
 footer::before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:rgba(255,255,255,.07);left:-140px;bottom:-220px}
@@ -737,7 +767,7 @@ function columnChart(points,opts){
     svg.appendChild(s("line",{class:"grid-l",x1:pl,x2:W-pr,y1:H-pb,y2:H-pb}));
     points.forEach(function(p,i){
       var cx=pl+band*i+band/2,x=cx-bw/2,y=Y(p.v),hgt=Math.max(H-pb-y,1),cur=p.id===opts.cur,r=Math.min(4,bw/2,hgt);
-      svg.appendChild(s("path",{d:"M"+x+" "+(H-pb)+" V"+(y+r)+" Q"+x+" "+y+" "+(x+r)+" "+y+" H"+(x+bw-r)+" Q"+(x+bw)+" "+y+" "+(x+bw)+" "+(y+r)+" V"+(H-pb)+" Z",fill:cur?"#8C52FF":"#D8CBFB"}));
+      svg.appendChild(s("path",{d:"M"+x+" "+(H-pb)+" V"+(y+r)+" Q"+x+" "+y+" "+(x+r)+" "+y+" H"+(x+bw-r)+" Q"+(x+bw)+" "+y+" "+(x+bw)+" "+(y+r)+" V"+(H-pb)+" Z",fill:cur?(opts.color||"#8C52FF"):(opts.past||"#D8CBFB")}));
       svg.appendChild(s("text",{class:"vlab",x:cx,y:y-7,"text-anchor":"middle"},opts.fmt(p.v)));
       svg.appendChild(s("text",{class:"axis"+(cur?" cur":""),x:cx,y:H-8,"text-anchor":"middle"},courtMois(p.id)));
       var hit=s("rect",{class:"hit",x:pl+band*i,y:0,width:band,height:H-pb,tabindex:"0","aria-label":libMois(p.id)+" : "+opts.full(p.v)});
@@ -777,21 +807,25 @@ function seriesUpTo(m,getter,limit){
   return out;
 }
 function indiceMois(m,n){return n+" derniers mois"+(partiel(m)?", "+nomMois(m.id)+" arrêté au "+jourFin(m):"");}
-function trendCard(m,title,getter,fmt,full){
+/* Couleurs des réseaux pour les graphiques : [mois affiché, mois précédents] */
+var NETCOL={facebook:["#1877F2","#C5DBFB"],instagram:["#C13584","#EFC9DD"],linkedin:["#0A66C2","#C3D9EF"],meta:["#0064E0"],tiktok:["#FE2C55"]};
+function ndot(){return h("i",{class:"ndot","aria-hidden":"true"});}
+function trendCard(m,title,getter,fmt,full,net){
   var pts=seriesUpTo(m,getter,6);
   if(pts.length<2)return null;
-  return h("div",{class:"card"},
-    h("div",{class:"chart-head"},h("h4",null,rich(title)),h("span",{class:"hint",text:indiceMois(m,pts.length)})),
-    columnChart(pts,{cur:m.id,fmt:fmt,full:full,aria:title.replace(/\*/g,"")+" : "+pts.map(function(p){return libMois(p.id)+" "+full(p.v);}).join(", ")}),
+  return h("div",{class:"card"+(net?" net-"+net:"")},
+    h("div",{class:"chart-head"},h("h4",null,net?ndot():null,h("span",null,rich(title))),h("span",{class:"hint",text:indiceMois(m,pts.length)})),
+    columnChart(pts,{cur:m.id,color:net?NETCOL[net][0]:null,past:net?NETCOL[net][1]:null,fmt:fmt,full:full,aria:title.replace(/\*/g,"")+" : "+pts.map(function(p){return libMois(p.id)+" "+full(p.v);}).join(", ")}),
     dataTable(["Mois","Valeur"],pts.map(function(p){return [libMois(p.id),full(p.v)];})));
 }
 function budgetCard(m){
   var pts=seriesUpTo(m,function(x){return x.ads?1:null;},6).map(function(p){var mm=MONTHS[idx(p.id)];return {id:p.id,a:kv(mm.ads.meta,"spend")||0,b:kv(mm.ads.tiktok,"spend")||0};});
   if(pts.length<2)return null;
-  return h("div",{class:"card"},
-    h("div",{class:"chart-head"},h("h4",{text:"Budget publicitaire"}),h("span",{class:"hint",text:indiceMois(m,pts.length)})),
-    h("div",{class:"legend"},h("span",null,h("i",{style:"background:#8C52FF"}),"Meta Ads"),h("span",null,h("i",{style:"background:#EB6834"}),"TikTok Ads")),
-    stackChart(pts,{cur:m.id,ca:"#8C52FF",cb:"#EB6834",la:"Meta Ads",lb:"TikTok Ads",aria:"Budget publicitaire par mois : "+pts.map(function(p){return libMois(p.id)+" "+euro(p.a+p.b);}).join(", ")}),
+  var cm=NETCOL.meta[0],ct=NETCOL.tiktok[0];
+  return h("div",{class:"card net-pub"},
+    h("div",{class:"chart-head"},h("h4",null,ndot(),h("span",{text:"Budget publicitaire"})),h("span",{class:"hint",text:indiceMois(m,pts.length)})),
+    h("div",{class:"legend"},h("span",null,h("i",{style:"background:"+cm}),"Meta Ads"),h("span",null,h("i",{style:"background:"+ct}),"TikTok Ads")),
+    stackChart(pts,{cur:m.id,ca:cm,cb:ct,la:"Meta Ads",lb:"TikTok Ads",aria:"Budget publicitaire par mois : "+pts.map(function(p){return libMois(p.id)+" "+euro(p.a+p.b);}).join(", ")}),
     dataTable(["Mois","Meta Ads","TikTok Ads","Total"],pts.map(function(p){return [libMois(p.id),euro(p.a),euro(p.b),euro(p.a+p.b)];})));
 }
 function kv(sec,key){var o=norm(sec&&sec.kpi?sec.kpi[key]:null);return o?o.v:null;}
@@ -806,7 +840,7 @@ function secVueEnsemble(m,prevM){
     var kd=kpiData(m,net,null,"followers",CAT[net].followers,prevM);if(!kd)return;
     var ov=m.overview&&m.overview[net]||{};
     var pill=ov.pill||(kd.pill?{t:kd.pill.t.split(" · ").pop(),c:kd.pill.c}:null);
-    var c=h("div",{class:"card kpi"},h("div",{class:"kpi-label",text:n[1]+" · abonnés"}),h("div",{class:"kpi-value",text:entier(kd.v)}),
+    var c=h("div",{class:"card kpi ov net-"+net},h("div",{class:"kpi-label"},ndot(),h("span",{text:"Abonnés "+n[1]})),h("div",{class:"kpi-value",text:entier(kd.v)}),
       pill?h("div",{class:"kpi-foot"},pillEl(pill)):null,ov.note?h("div",{class:"kpi-sub"},rich(ov.note)):null);
     cards.push(c);
   });
@@ -814,7 +848,7 @@ function secVueEnsemble(m,prevM){
     var a=kv(m.ads.meta,"spend")||0,b=kv(m.ads.tiktok,"spend")||0;
     var ov=m.overview&&m.overview.ads||{};var pill=ov.pill;
     if(!pill&&prevM&&prevM.ads&&m.autoPills!==false&&!partiel(m)&&!partiel(prevM)){var pa=(kv(prevM.ads.meta,"spend")||0)+(kv(prevM.ads.tiktok,"spend")||0);pill=autoPill({pol:0},a+b,pa);}
-    cards.push(h("div",{class:"card kpi"},h("div",{class:"kpi-label",text:"Publicité · dépensé"}),h("div",{class:"kpi-value",text:euro(a+b)}),
+    cards.push(h("div",{class:"card kpi ov net-pub"},h("div",{class:"kpi-label"},ndot(),h("span",{text:"Budget publicitaire"})),h("div",{class:"kpi-value",text:euro(a+b)}),
       pill?h("div",{class:"kpi-foot"},pillEl(pill)):null,ov.note?h("div",{class:"kpi-sub"},rich(ov.note)):null));
   }
   sec.appendChild(grid(cards));
@@ -823,23 +857,22 @@ function secVueEnsemble(m,prevM){
   hist.forEach(function(x){ids.push(x.month);});MONTHS.forEach(function(x){if(ids.indexOf(x.id)<0)ids.push(x.id);});
   ids.sort();ids=ids.filter(function(id){return id<=m.id;}).slice(-13);
   var sm=h("div",{class:"sm"});
-  var COLORS={facebook:"#8C52FF",instagram:"#8C52FF",linkedin:"#8C52FF"};
   NETS.forEach(function(n){
     var pts=ids.map(function(id){return {id:id,v:followersAt(n[0],id)};}).filter(function(p){return p.v!=null;});
     if(pts.length<2)return;
     var g=pts[pts.length-1].v-pts[0].v,nm=pts.length-1;
-    var card=h("div",{class:"card"},
-      h("div",{class:"top"},h("div",null,h("div",{class:"net",text:n[1]}),h("div",{class:"big",text:entier(pts[pts.length-1].v)})),
+    var card=h("div",{class:"card net-"+n[0]},
+      h("div",{class:"top"},h("div",null,h("div",{class:"net"},ndot(),h("span",{text:n[1]})),h("div",{class:"big",text:entier(pts[pts.length-1].v)})),
         h("div",{class:"grow "+(g>0?"good":g<0?"bad":""),text:signe(g,entier)+" en "+nm+" mois"})),
-      lineChart(pts,{color:COLORS[n[0]],unit:"abonnés",aria:"Abonnés "+n[1]+" : "+pts.map(function(p){return libMois(p.id)+" "+entier(p.v);}).join(", ")}),
+      lineChart(pts,{color:NETCOL[n[0]][0],unit:"abonnés",aria:"Abonnés "+n[1]+" : "+pts.map(function(p){return libMois(p.id)+" "+entier(p.v);}).join(", ")}),
       dataTable(["Fin de mois","Abonnés"],pts.map(function(p){return [libMois(p.id),entier(p.v)];})));
     sm.appendChild(card);
   });
   sec.appendChild(h("div",{class:"block"},h("div",{class:"block-head"},h("span",{class:"tag",text:"Communautés"}),h("h3",{text:"Évolution des abonnés, fin de mois"})),sm));
   var trends=[
-    trendCard(m,"Facebook · vues* de contenu",function(x){return kv(x.facebook,"views");},compact,function(v){return entier(v)+" vues";}),
-    trendCard(m,"Instagram · vues*",function(x){return kv(x.instagram,"views");},compact,function(v){return entier(v)+" vues";}),
-    trendCard(m,"LinkedIn · impressions*",function(x){return kv(x.linkedin,"impressions");},compact,function(v){return entier(v)+" impressions";}),
+    trendCard(m,"Vues* de contenu Facebook",function(x){return kv(x.facebook,"views");},compact,function(v){return entier(v)+" vues";},"facebook"),
+    trendCard(m,"Vues* Instagram",function(x){return kv(x.instagram,"views");},compact,function(v){return entier(v)+" vues";},"instagram"),
+    trendCard(m,"Impressions* LinkedIn",function(x){return kv(x.linkedin,"impressions");},compact,function(v){return entier(v)+" impressions";},"linkedin"),
     budgetCard(m)
   ].filter(Boolean);
   if(trends.length)sec.appendChild(h("div",{class:"block"},h("div",{class:"block-head"},h("span",{class:"tag",text:"Tendances"}),h("h3",{text:"Visibilité et budget, mois par mois"})),h("div",{class:"grid g2"},trends)));
@@ -849,7 +882,7 @@ function banner(m,title,sub){return h("div",{class:"net-banner on-violet"},h("di
 
 function secFacebook(m,prevM){
   var f=m.facebook;if(!f)return null;var C=CAT.facebook;
-  var sec=h("section",{class:"sec",id:"facebook"},banner(m,"Facebook"));
+  var sec=h("section",{class:"sec rs net-facebook",id:"facebook"},banner(m,"Facebook"));
   sec.appendChild(blockHead("Facebook","Communauté et visibilité"));
   sec.appendChild(grid(tiles(m,"facebook",null,["followers","contents","views","pageVisits","followersGained","followersLost"],prevM)));
   var row=[];var sp=splitCard(m,"facebook",prevM);if(sp)row.push(sp);
@@ -871,7 +904,7 @@ function secFacebook(m,prevM){
 }
 function secInstagram(m,prevM){
   var g=m.instagram;if(!g)return null;var C=CAT.instagram;
-  var sec=h("section",{class:"sec",id:"instagram"},banner(m,"Instagram"));
+  var sec=h("section",{class:"sec rs net-instagram",id:"instagram"},banner(m,"Instagram"));
   sec.appendChild(blockHead("Instagram","Croissance de la communauté"));
   sec.appendChild(grid(tiles(m,"instagram",null,["followers","followersGained","followersLost","netFollowers","contents"],prevM,{hl:"followers"})));
   audienceBlocks("Instagram",g.audience).forEach(function(el){sec.appendChild(el);});
@@ -899,7 +932,7 @@ function secInstagram(m,prevM){
 }
 function secLinkedin(m,prevM){
   var l=m.linkedin;if(!l)return null;var C=CAT.linkedin;
-  var sec=h("section",{class:"sec",id:"linkedin"},banner(m,"LinkedIn"));
+  var sec=h("section",{class:"sec rs net-linkedin",id:"linkedin"},banner(m,"LinkedIn"));
   sec.appendChild(blockHead("LinkedIn","Communauté et contenu"));
   sec.appendChild(grid(tiles(m,"linkedin",null,["followers","posts","impressions","postImpressions","reactions","clicks","pageViews","uniqueVisitors","interactions","shares","comments","engagement"],prevM)));
   audienceBlocks("LinkedIn",l.audience).forEach(function(el){sec.appendChild(el);});
@@ -909,22 +942,33 @@ function secLinkedin(m,prevM){
 }
 function secPub(m,prevM){
   var a=m.ads;if(!a)return null;
-  var sec=h("section",{class:"sec",id:"publicite"},banner(m,"Publicité","Meta Ads et TikTok Ads"));
+  var sec=h("section",{class:"sec rs net-pub",id:"publicite"},banner(m,"Publicité","Meta Ads et TikTok Ads"));
   if(a.meta){
-    sec.appendChild(blockHead("Meta Ads","Portée, résultats et coûts"));
-    sec.appendChild(grid(tiles(m,"ads","meta",["impressions","reach","clicks","spend"],prevM)));
+    var mb=h("div",{class:"rs net-meta"});
+    mb.appendChild(blockHead("Meta Ads","Portée, résultats et coûts"));
+    mb.appendChild(grid(tiles(m,"ads","meta",["impressions","reach","clicks","spend"],prevM)));
     var cost=tiles(m,"ads","meta",["cpm","cpc","ctr"],prevM);
-    if(cost.length)sec.appendChild(grid(cost,null,"margin-top:14px"));
-    if(a.meta.note)sec.appendChild(h("div",{style:"margin-top:14px"},noteCard(null,a.meta.note)));
-    if(a.meta.campaigns&&a.meta.campaigns.rows&&a.meta.campaigns.rows.length){sec.appendChild(blockHead("Meta Ads","Classement des campagnes"));sec.appendChild(tableCard(a.meta.campaigns,"campagnes"));}
+    if(cost.length)mb.appendChild(grid(cost,null,"margin-top:14px"));
+    if(a.meta.note)mb.appendChild(h("div",{style:"margin-top:14px"},noteCard(null,a.meta.note)));
+    if(a.meta.campaigns&&a.meta.campaigns.rows&&a.meta.campaigns.rows.length){mb.appendChild(blockHead("Meta Ads","Classement des campagnes"));mb.appendChild(tableCard(a.meta.campaigns,"campagnes"));}
+    sec.appendChild(mb);
   }
   if(a.tiktok){
-    sec.appendChild(blockHead("TikTok Ads","Résultats et campagnes"));
-    sec.appendChild(grid(tiles(m,"ads","tiktok",["impressions","clicks","conversions","cpm","cpc","ctr","spend"],prevM)));
-    if(a.tiktok.note)sec.appendChild(h("div",{style:"margin-top:14px"},noteCard(null,a.tiktok.note)));
-    if(a.tiktok.campaigns&&a.tiktok.campaigns.rows&&a.tiktok.campaigns.rows.length){var tc=tableCard(a.tiktok.campaigns,"campagnes");tc.style.marginTop="14px";sec.appendChild(tc);}
+    var tb=h("div",{class:"rs net-tiktok"});
+    tb.appendChild(blockHead("TikTok Ads","Résultats et campagnes"));
+    tb.appendChild(grid(tiles(m,"ads","tiktok",["impressions","clicks","conversions","cpm","cpc","ctr","spend"],prevM)));
+    if(a.tiktok.note)tb.appendChild(h("div",{style:"margin-top:14px"},noteCard(null,a.tiktok.note)));
+    if(a.tiktok.campaigns&&a.tiktok.campaigns.rows&&a.tiktok.campaigns.rows.length){var tc=tableCard(a.tiktok.campaigns,"campagnes");tc.style.marginTop="14px";tb.appendChild(tc);}
+    sec.appendChild(tb);
   }
-  if(a.analysis){sec.appendChild(blockHead("Publicité","Analyses et recommandations"));sec.appendChild(analysis(a.analysis));}
+  if(a.analysis){
+    sec.appendChild(blockHead("Publicité","Analyses et recommandations"));
+    var an=analysis(a.analysis);
+    /* Chaque carte d'analyse reprend la couleur de sa régie */
+    Array.prototype.forEach.call(an.children,function(c,i){var t=(a.analysis[i]||{}).title||"";
+      if(/meta/i.test(t))c.className+=" rs net-meta";else if(/tiktok/i.test(t))c.className+=" rs net-tiktok";});
+    sec.appendChild(an);
+  }
   return sec;
 }
 function secBilan(m){
