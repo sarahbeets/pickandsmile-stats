@@ -96,6 +96,7 @@ p{margin:0}
 .eyebrow{font-size:12.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase}
 .hero h1{color:#fff;font-size:clamp(34px,6.4vw,68px);letter-spacing:-.02em;text-transform:uppercase;margin:12px 0 14px;line-height:1.02}
 .hero .period{font-size:clamp(15px,2vw,19px);font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+.hero .period-note{display:inline-block;margin-top:10px;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.16);font-size:13px;font-weight:500}
 .mpills{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
 .mpills button{border:1.5px solid rgba(255,255,255,.55);background:transparent;color:#fff;border-radius:999px;padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
 .mpills button:hover{background:rgba(255,255,255,.14)}
@@ -313,6 +314,7 @@ footer .mascotte{width:clamp(110px,16vw,190px);height:auto}
         <div class="eyebrow">Rapport mensuel · Pick &amp; Smile</div>
         <h1>Performances<br>médias sociaux</h1>
         <div class="period" id="period"></div>
+        <div class="period-note" id="period-note" hidden></div>
         <div class="mpills" id="mpills" role="group" aria-label="Choisir le mois"></div>
       </div>
       <img class="mascotte" data-img="mascotte" alt="La mascotte Pick &amp; Smile, un carton souriant qui lève le pouce">
@@ -374,6 +376,9 @@ function nomMois(id){return MOIS[ym(id).m-1];}
 function libMois(id){var t=ym(id);var n=MOIS[t.m-1];return n.charAt(0).toUpperCase()+n.slice(1)+" "+t.y;}
 function courtMois(id){return MOIS_C[ym(id).m-1];}
 function joursMois(id){var t=ym(id);return new Date(t.y,t.m,0).getDate();}
+/* Mois en cours : « until » (AAAA-MM-JJ) donne le dernier jour pris en compte */
+function partiel(m){return !!(m&&m.until);}
+function jourFin(m){return partiel(m)?+m.until.split("-")[2]:joursMois(m.id);}
 function moisPrecedent(id){var t=ym(id);t.m--;if(t.m===0){t.m=12;t.y--;}return t.y+"-"+(t.m<10?"0":"")+t.m;}
 function deMois(id){var n=nomMois(id);return (/^[aeiouyéè]/i.test(n)?"d'":"de ")+n;}
 var NBSP=" ";
@@ -490,13 +495,15 @@ function autoPill(spec,cur,prev){
   var dir=(cur>prev?1:cur<prev?-1:0)*pol;
   return {t:t,c:pol===0||dir===0?"neutral":dir>0?"good":"bad"};
 }
+/* Indicateurs qui restent comparables quand un des deux mois n'est pas complet (taux, moyennes, abonnés) */
+var NON_CUMUL={followers:1,avgReachPerPost:1,avgReachPerStory:1,reelsAvgReach:1,reelsEngagement:1,engagement:1,reachPerDay:1,uniqueVisitors:1,cpm:1,cpc:1,ctr:1};
 function kpiData(m,net,sub,key,spec,prevM){
   var o=norm(get(secObj(m,net,sub),["kpi",key]));if(!o||o.v==null)return null;
   var out={v:o.v,d:o.d,pill:o.pill||null,sub:o.sub||null,subTone:o.subTone||null};
   if(m.autoPills!==false){
-    var pv=null,pid=null;
+    var pv=null,pid=null,comparable=NON_CUMUL[key]||!(partiel(m)||partiel(prevM));
     if(key==="followers"&&!sub){pid=moisPrecedent(m.id);pv=followersAt(net,pid);}
-    else if(prevM){var po=norm(get(secObj(prevM,net,sub),["kpi",key]));if(po&&po.v!=null){pv=po.v;pid=prevM.id;}}
+    else if(prevM&&comparable){var po=norm(get(secObj(prevM,net,sub),["kpi",key]));if(po&&po.v!=null){pv=po.v;pid=prevM.id;}}
     if(!out.pill)out.pill=autoPill(spec,o.v,pv);
     if(!out.sub&&spec.prev&&pv!=null)out.sub=fmtVal(spec,{v:pv,d:o.d})+" en "+nomMois(pid);
   }
@@ -769,11 +776,12 @@ function seriesUpTo(m,getter,limit){
   for(var j=Math.max(0,i-(limit||6)+1);j<=i;j++){var v=getter(MONTHS[j]);if(v!=null)out.push({id:MONTHS[j].id,v:v});}
   return out;
 }
+function indiceMois(m,n){return n+" derniers mois"+(partiel(m)?", "+nomMois(m.id)+" arrêté au "+jourFin(m):"");}
 function trendCard(m,title,getter,fmt,full){
   var pts=seriesUpTo(m,getter,6);
   if(pts.length<2)return null;
   return h("div",{class:"card"},
-    h("div",{class:"chart-head"},h("h4",null,rich(title)),h("span",{class:"hint",text:pts.length+" derniers mois"})),
+    h("div",{class:"chart-head"},h("h4",null,rich(title)),h("span",{class:"hint",text:indiceMois(m,pts.length)})),
     columnChart(pts,{cur:m.id,fmt:fmt,full:full,aria:title.replace(/\*/g,"")+" : "+pts.map(function(p){return libMois(p.id)+" "+full(p.v);}).join(", ")}),
     dataTable(["Mois","Valeur"],pts.map(function(p){return [libMois(p.id),full(p.v)];})));
 }
@@ -781,7 +789,7 @@ function budgetCard(m){
   var pts=seriesUpTo(m,function(x){return x.ads?1:null;},6).map(function(p){var mm=MONTHS[idx(p.id)];return {id:p.id,a:kv(mm.ads.meta,"spend")||0,b:kv(mm.ads.tiktok,"spend")||0};});
   if(pts.length<2)return null;
   return h("div",{class:"card"},
-    h("div",{class:"chart-head"},h("h4",{text:"Budget publicitaire"}),h("span",{class:"hint",text:pts.length+" derniers mois"})),
+    h("div",{class:"chart-head"},h("h4",{text:"Budget publicitaire"}),h("span",{class:"hint",text:indiceMois(m,pts.length)})),
     h("div",{class:"legend"},h("span",null,h("i",{style:"background:#8C52FF"}),"Meta Ads"),h("span",null,h("i",{style:"background:#EB6834"}),"TikTok Ads")),
     stackChart(pts,{cur:m.id,ca:"#8C52FF",cb:"#EB6834",la:"Meta Ads",lb:"TikTok Ads",aria:"Budget publicitaire par mois : "+pts.map(function(p){return libMois(p.id)+" "+euro(p.a+p.b);}).join(", ")}),
     dataTable(["Mois","Meta Ads","TikTok Ads","Total"],pts.map(function(p){return [libMois(p.id),euro(p.a),euro(p.b),euro(p.a+p.b)];})));
@@ -805,7 +813,7 @@ function secVueEnsemble(m,prevM){
   if(m.ads){
     var a=kv(m.ads.meta,"spend")||0,b=kv(m.ads.tiktok,"spend")||0;
     var ov=m.overview&&m.overview.ads||{};var pill=ov.pill;
-    if(!pill&&prevM&&prevM.ads&&m.autoPills!==false){var pa=(kv(prevM.ads.meta,"spend")||0)+(kv(prevM.ads.tiktok,"spend")||0);pill=autoPill({pol:0},a+b,pa);}
+    if(!pill&&prevM&&prevM.ads&&m.autoPills!==false&&!partiel(m)&&!partiel(prevM)){var pa=(kv(prevM.ads.meta,"spend")||0)+(kv(prevM.ads.tiktok,"spend")||0);pill=autoPill({pol:0},a+b,pa);}
     cards.push(h("div",{class:"card kpi"},h("div",{class:"kpi-label",text:"Publicité · dépensé"}),h("div",{class:"kpi-value",text:euro(a+b)}),
       pill?h("div",{class:"kpi-foot"},pillEl(pill)):null,ov.note?h("div",{class:"kpi-sub"},rich(ov.note)):null));
   }
@@ -954,7 +962,8 @@ function render(id){
   var m=MONTHS[idx(id)]||MONTHS[MONTHS.length-1];CUR=m;
   var prevM=prevOf(m);
   var p=ym(m.id);
-  $("#period").textContent="Du 01 au "+joursMois(m.id)+" "+nomMois(m.id)+" "+p.y;
+  $("#period").textContent="Du 01 au "+jourFin(m)+" "+nomMois(m.id)+" "+p.y;
+  var pn=$("#period-note");pn.hidden=!partiel(m);pn.textContent=partiel(m)?"Mois en cours, chiffres arrêtés au "+jourFin(m)+" "+nomMois(m.id):"";
   var main=$("#main");main.textContent="";hideTip();CHARTS=[];
   var wrap=h("div",{class:"wrap"});
   [secVueEnsemble(m,prevM),secFacebook(m,prevM),secInstagram(m,prevM),secLinkedin(m,prevM),secPub(m,prevM),secBilan(m),secLexique()].forEach(function(x){if(x)wrap.appendChild(x);});

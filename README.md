@@ -25,6 +25,8 @@ Toutes les commandes demandent le mot de passe dans la variable `PS_MOT_DE_PASSE
 5. `python3 scripts/donnees.py ajouter-mois mois.json` puis `python3 scripts/build.py` : le mois apparaît dans l'aperçu.
 6. Après validation : `python3 scripts/donnees.py publier AAAA-MM` puis `python3 scripts/build.py`.
 
+Mois en cours : un mois peut être ajouté avant sa fin avec `"until": "AAAA-MM-JJ"` dans `mois.json` (dernier jour pris en compte). La page affiche alors « Du 01 au JJ » avec la mention du mois en cours et ne compare plus les cumuls (vues, clics, budget…) au mois précédent, seulement les abonnés, les moyennes et les taux. Le mois complet le remplace ensuite avec `ajouter-mois`.
+
 Dépendance Python : `cryptography`.
 
 ## Changer le mot de passe
